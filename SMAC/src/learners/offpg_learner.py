@@ -176,7 +176,7 @@ class OffPGLearner:
         baseline = th.sum(mac_out * q_vals, dim=-1).view(-1).detach()
 
 
-        coma_loss = -(self.mixer.forward(baseline, states,False,None)* mask).sum() / mask.sum()
+        coma_loss = -(self.mixer.forward(baseline.view(actions.shape[0],actions.shape[1],actions.shape[2]), states,False,None)* mask).sum() / mask.sum()
         
         # Calculate policy grad with mask
         #pi_taken = th.gather(pi, dim=1, index=actions.reshape(-1, 1)).squeeze(1)
