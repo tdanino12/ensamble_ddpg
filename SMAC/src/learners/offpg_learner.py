@@ -40,6 +40,7 @@ class OffPGLearner:
         self.numpy_list = np.zeros(650000)
         self.index = 0
         self.first_ind = 0
+
     def train(self, batch: EpisodeBatch, t_env: int, log):
         # Get the relevant quantities
         bs = batch.batch_size
@@ -174,16 +175,19 @@ class OffPGLearner:
         pi = mac_out.view(-1, self.n_actions)
         baseline = th.sum(mac_out * q_vals, dim=-1).view(-1).detach()
 
+
+        coma_loss = -(self.mixer.forward(baseline, states,False,None)* mask).sum() / mask.sum()
+        
         # Calculate policy grad with mask
-        pi_taken = th.gather(pi, dim=1, index=actions.reshape(-1, 1)).squeeze(1)
-        pi_taken[mask == 0] = 1.0
-        log_pi_taken = th.log(pi_taken)
-        coe = self.mixer.k(states).view(-1)
+        #pi_taken = th.gather(pi, dim=1, index=actions.reshape(-1, 1)).squeeze(1)
+        #pi_taken[mask == 0] = 1.0
+        #log_pi_taken = th.log(pi_taken)
+        #coe = self.mixer.k(states).view(-1)
         #entropy = -(pi*log_pi_taken)
                     
-        advantages = (q_taken.view(-1) - baseline).detach()
+        #advantages = (q_taken.view(-1) - baseline).detach()
 
-        coma_loss = - ((coe * (advantages)* log_pi_taken ) * mask).sum() / mask.sum()
+        #coma_loss = - ((coe * (advantages)* log_pi_taken ) * mask).sum() / mask.sum()
         #coma_loss = - ((coe * (advantages)* log_pi_taken+total_div ) * mask).sum() / mask.sum()
         # Optimise agents
         self.agent_optimiser.zero_grad()
